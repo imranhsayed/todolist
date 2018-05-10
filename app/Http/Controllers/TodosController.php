@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Todo;
 
 class TodosController extends Controller
 {
@@ -13,7 +14,10 @@ class TodosController extends Controller
      */
     public function index()
     {
-        //
+        // Get the data from the todos database table
+//	    $todos = Todo::all();
+	    $todos = Todo::orderBy( 'created_at', 'desc' )->get();
+	    return view( 'todos.index', compact( 'todos' ) );
     }
 
     /**
@@ -23,7 +27,7 @@ class TodosController extends Controller
      */
     public function create()
     {
-        //
+        return view( 'todos.create' );
     }
 
     /**
@@ -34,7 +38,22 @@ class TodosController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        //Validation
+	    $this->validate( request(), [
+	    	'text' => 'required',
+		    'body' => 'required',
+		    'due' => 'required',
+	    ] );
+
+    	// Store the data into database
+	    $todos = new Todo;
+	    $todos->text = $request->input( 'text' );
+	    $todos->body = $request->input( 'body' );
+	    $todos->due = $request->input( 'due' );
+	    $todos->save();
+
+	    return redirect( url( '/' ) )->with( 'success', 'Your data has been saved' );
+
     }
 
     /**
@@ -45,7 +64,8 @@ class TodosController extends Controller
      */
     public function show($id)
     {
-        //
+        $todos = Todo::find( $id );
+    	return view( 'todos.show',compact( 'todos' ) );
     }
 
     /**
@@ -56,7 +76,8 @@ class TodosController extends Controller
      */
     public function edit($id)
     {
-        //
+	    $todos = Todo::find( $id );
+	    return view( 'todos.edit',compact( 'todos' ) );
     }
 
     /**
@@ -68,7 +89,14 @@ class TodosController extends Controller
      */
     public function update(Request $request, $id)
     {
-        //
+	    // Updates the data into database
+	    $todos = Todo::find( $id );
+	    $todos->text = $request->input( 'text' );
+	    $todos->body = $request->input( 'body' );
+	    $todos->due = $request->input( 'due' );
+	    $todos->save();
+
+	    return redirect( url( '/' ) )->with( 'success', 'Your data has been updated' );
     }
 
     /**
@@ -79,6 +107,8 @@ class TodosController extends Controller
      */
     public function destroy($id)
     {
-        //
+        $todo = Todo::find( $id );
+        $todo->delete();
+	    return redirect( url( '/' ) )->with( 'success', 'Your data has been deleted' );
     }
 }
